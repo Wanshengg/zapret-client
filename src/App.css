@@ -1,4 +1,5 @@
 :root {
+  color-scheme: light;
   --ink: oklch(0.24 0.025 155);
   --muted: oklch(0.51 0.018 155);
   --paper: oklch(0.975 0.008 140);
@@ -7,7 +8,38 @@
   --green: oklch(0.48 0.12 157);
   --green-dark: oklch(0.31 0.065 157);
   --green-soft: oklch(0.94 0.035 157);
+  --accent-text: var(--green-dark);
+  --accent-border: oklch(0.82 0.06 157);
+  --accent-hover: oklch(0.9 0.06 157);
+  --primary-bg: var(--green-dark);
+  --primary-hover: var(--green);
+  --on-primary: var(--surface);
+  --on-accent: oklch(0.97 0.012 157);
+  --toggle-off: oklch(0.84 0.012 155);
   --danger: oklch(0.53 0.17 27);
+  --danger-soft: oklch(0.95 0.025 27);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --ink: oklch(0.92 0.012 155);
+  --muted: oklch(0.7 0.015 155);
+  --paper: oklch(0.19 0.012 155);
+  --surface: oklch(0.225 0.014 155);
+  --line: oklch(0.32 0.015 155);
+  --green: oklch(0.72 0.13 157);
+  --green-dark: oklch(0.29 0.05 157);
+  --green-soft: oklch(0.29 0.035 157);
+  --accent-text: oklch(0.79 0.1 157);
+  --accent-border: oklch(0.43 0.055 157);
+  --accent-hover: oklch(0.35 0.055 157);
+  --primary-bg: oklch(0.7 0.12 157);
+  --primary-hover: oklch(0.78 0.11 157);
+  --on-primary: oklch(0.19 0.02 157);
+  --on-accent: oklch(0.96 0.012 157);
+  --toggle-off: oklch(0.38 0.015 155);
+  --danger: oklch(0.72 0.15 27);
+  --danger-soft: oklch(0.3 0.045 27);
 }
 
 * { box-sizing: border-box; }
@@ -209,4 +241,33 @@ button:focus-visible, a:focus-visible { outline: 3px solid oklch(0.65 0.13 157 /
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
+/* Theme-aware accents and the theme selector. */
+.mini-mark, .brand-mark { color: var(--on-accent); }
+.navigation button.active, .connection-chip.online, .github-link:hover,
+.result-badge.success, .history-status.success, .message, .boot { color: var(--accent-text); }
+.connection-chip.online, .message, .power-button { border-color: var(--accent-border); }
+.power-button { color: var(--accent-text); }
+.power-button:hover:not(:disabled) { background: var(--accent-hover); }
+.is-connected .orbit { border-color: var(--accent-border); }
+.button.primary { border-color: var(--primary-bg); background: var(--primary-bg); color: var(--on-primary); }
+.button.primary:hover:not(:disabled) { border-color: var(--primary-hover); background: var(--primary-hover); }
+.button.secondary:hover:not(:disabled) { border-color: var(--accent-border); }
+.result-badge.failed { background: var(--danger-soft); }
+.toggle { background: var(--toggle-off); }
+.toggle span { background: var(--on-accent); }
+.toggle.is-on { background: var(--green); }
+.message { border-color: var(--accent-border); }
+
+.theme-options { display: inline-flex; flex: none; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: 11px; background: var(--paper); }
+.theme-options button { min-height: 36px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font-size: 11px; font-weight: 600; transition: background 160ms, color 160ms, transform 160ms; }
+.theme-options button:hover { color: var(--ink); }
+.theme-options button:active { transform: scale(.97); }
+.theme-options button.active { background: var(--surface); color: var(--accent-text); box-shadow: 0 1px 5px oklch(0.2 0.02 155 / .12); }
+
+@media (max-width: 700px) {
+  .theme-setting-row { align-items: stretch; flex-direction: column; }
+  .theme-options { width: 100%; }
+  .theme-options button { min-height: 44px; flex: 1; padding: 0 6px; }
 }

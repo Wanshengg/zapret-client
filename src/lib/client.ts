@@ -1,4 +1,5 @@
 import type { AppState, Settings, StrategyResult, ZapretApi } from '@/types/app'
+import { readStoredTheme } from '@/lib/theme'
 
 const names = ['Стандартная', 'ALT', 'ALT2', 'ALT3', 'ALT4', 'ALT5', 'ALT6', 'ALT7', 'ALT8', 'ALT9', 'ALT10', 'ALT11', 'ALT12', 'ALT13', 'EXP', 'FAKE TLS AUTO', 'FAKE TLS AUTO ALT', 'FAKE TLS AUTO ALT2', 'FAKE TLS AUTO ALT3', 'SIMPLE FAKE', 'SIMPLE FAKE ALT', 'SIMPLE FAKE ALT2']
 const strategies = names.map((name) => ({ id: name === 'Стандартная' ? 'general.bat' : `general (${name}).bat`, name }))
@@ -9,7 +10,7 @@ function mockApi(): ZapretApi {
     status: 'disconnected', message: null, progress: null, busy: false, checkingUpdates: false,
     activeStrategy: null, selectedStrategy: 'general.bat', lastWorkingStrategy: null,
     version: '1.10.4', latestVersion: '1.10.4', updateAvailable: false, lastUpdateCheck: null,
-    results: [], settings: { autoStrategy: true, autoUpdate: true, launchAtStartup: false },
+    results: [], settings: { autoStrategy: true, autoUpdate: true, launchAtStartup: false, theme: readStoredTheme() },
     strategies, isElectron: false, isPackaged: false,
   }
   const listeners = new Set<(state: AppState) => void>()

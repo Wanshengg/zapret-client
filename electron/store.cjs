@@ -11,6 +11,7 @@ const DEFAULTS = {
     autoStrategy: true,
     autoUpdate: true,
     launchAtStartup: false,
+    theme: 'system',
   },
 };
 
@@ -29,6 +30,7 @@ class Store {
         settings: { ...this.data.settings, ...saved.settings },
         results: Array.isArray(saved.results) ? saved.results.slice(0, 100) : [],
       };
+      if (!['system', 'light', 'dark'].includes(this.data.settings.theme)) this.data.settings.theme = 'system';
     } catch (error) {
       if (error.code !== 'ENOENT') console.warn('Settings could not be loaded:', error.message);
     }
@@ -48,7 +50,8 @@ class Store {
   }
 
   async patchSettings(values) {
-    this.data.settings = { ...this.data.settings, ...values };
+    const defined = Object.fromEntries(Object.entries(values).filter(([, value]) => value !== undefined));
+    this.data.settings = { ...this.data.settings, ...defined };
     await this.save();
   }
 

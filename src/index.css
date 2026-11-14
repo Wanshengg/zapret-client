@@ -31,6 +31,28 @@
     --radius: 0.625rem;
   }
 
+  :root[data-theme='dark'] {
+    --background: 150 9% 11%;
+    --foreground: 150 10% 91%;
+    --card: 150 9% 14%;
+    --card-foreground: 150 10% 91%;
+    --popover: 150 9% 14%;
+    --popover-foreground: 150 10% 91%;
+    --primary: 157 45% 65%;
+    --primary-foreground: 157 20% 12%;
+    --secondary: 150 9% 19%;
+    --secondary-foreground: 157 30% 78%;
+    --muted: 150 9% 19%;
+    --muted-foreground: 150 7% 68%;
+    --accent: 157 14% 20%;
+    --accent-foreground: 157 30% 78%;
+    --destructive: 15 65% 65%;
+    --destructive-foreground: 15 20% 12%;
+    --border: 150 8% 25%;
+    --input: 150 8% 25%;
+    --ring: 157 40% 65%;
+  }
+
   * { border-color: hsl(var(--border)); }
   html { background: hsl(var(--background)); }
   body {
@@ -45,5 +67,5 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
-  ::selection { background: oklch(0.86 0.08 157); color: oklch(0.25 0.05 157); }
+  ::selection { background: var(--green-soft); color: var(--ink); }
 }

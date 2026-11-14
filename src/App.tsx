@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   Activity, Check, CheckCircle2, ChevronRight, Circle, Download,
-  ExternalLink, Github, History, ListChecks, LoaderCircle, Minus, Power,
-  RefreshCw, Settings2, ShieldCheck, SlidersHorizontal, Wifi, X, Zap,
+  ExternalLink, Github, History, ListChecks, LoaderCircle, Minus, Monitor, Moon, Power,
+  RefreshCw, Settings2, ShieldCheck, SlidersHorizontal, Sun, Wifi, X, Zap,
 } from 'lucide-react'
 import { api } from '@/lib/client'
-import type { AppState, Settings } from '@/types/app'
+import { applyTheme } from '@/lib/theme'
+import type { AppState, Settings, Theme } from '@/types/app'
 import './App.css'
 
 type Page = 'connection' | 'strategies' | 'history' | 'settings'
@@ -42,6 +43,17 @@ function App() {
     return () => { mounted = false; unsubscribe() }
   }, [])
 
+  useEffect(() => {
+    const theme = state?.settings.theme
+    if (!theme) return
+    applyTheme(theme)
+    if (theme !== 'system') return
+    const media = window.matchMedia('(prefers-color-scheme: dark)')
+    const followSystem = () => applyTheme('system')
+    media.addEventListener('change', followSystem)
+    return () => media.removeEventListener('change', followSystem)
+  }, [state?.settings.theme])
+
   const strategyName = useMemo(() => {
     const id = state?.activeStrategy || state?.lastWorkingStrategy
     return state?.strategies.find((item) => item.id === id)?.name ?? 'Не выбрана'
@@ -52,7 +64,8 @@ function App() {
   const connected = state.status === 'connected'
   const working = state.busy || state.status === 'testing' || state.status === 'preparing'
   const selectPage = (next: Page) => setPage(next)
-  const updateSetting = (key: keyof Settings) => api.setSettings({ [key]: !state.settings[key] })
+  const updateSetting = (key: Exclude<keyof Settings, 'theme'>) => api.setSettings({ [key]: !state.settings[key] })
+  const setTheme = (theme: Theme) => api.setSettings({ theme })
 
   return (
     <div className="app-shell">
@@ -72,7 +85,7 @@ function App() {
             {([
               ['connection', Wifi, 'Подключение'], ['strategies', ListChecks, 'Стратегии'],
               ['history', History, 'Журнал'], ['settings', Settings2, 'Настройки'],
-            ] as const).map(([id, Icon, label]) => <button key={id} className={page === id ? 'active' : ''} onClick={() => selectPage(id)}><Icon size={18} /><span>{label}</span>{id === 'history' && state.results.length > 0 && <b>{state.results.length}</b>}</button>)}
+            ] as const).map(([id, Icon, label]) => <button key={id} aria-label={label} className={page === id ? 'active' : ''} onClick={() => selectPage(id)}><Icon size={18} /><span>{label}</span>{id === 'history' && state.results.length > 0 && <b>{state.results.length}</b>}</button>)}
           </nav>
           <div className="sidebar-bottom">
             <div className="source-note"><ShieldCheck size={17} /><span>Оригинальное ядро<br />и конфиги Flowseal</span></div>
@@ -138,6 +151,15 @@ function App() {
           </section>}
 
           {page === 'settings' && <section className="settings-layout">
+            <div className="settings-group"><span className="section-label">ИНТЕРФЕЙС</span>
+              <div className="setting-row theme-setting-row"><div><strong>Тема оформления</strong><p>Выбор сохраняется между запусками</p></div>
+                <div className="theme-options" role="group" aria-label="Тема оформления">
+                  {([
+                    ['system', Monitor, 'Системная'], ['light', Sun, 'Светлая'], ['dark', Moon, 'Тёмная'],
+                  ] as const).map(([value, Icon, label]) => <button type="button" key={value} className={state.settings.theme === value ? 'active' : ''} aria-pressed={state.settings.theme === value} onClick={() => setTheme(value)}><Icon size={14} /><span>{label}</span></button>)}
+                </div>
+              </div>
+            </div>
             <div className="settings-group"><span className="section-label">ПОВЕДЕНИЕ</span>
               <SettingRow title="Автоматически подбирать стратегию" text="Сначала проверяем последнюю рабочую, затем остальные"><Toggle label="Автоматический подбор" checked={state.settings.autoStrategy} onChange={() => updateSetting('autoStrategy')} /></SettingRow>
               <SettingRow title="Обновлять конфиги автоматически" text="Каждые 6 часов проверяем официальный релиз GitHub"><Toggle label="Автоматическое обновление" checked={state.settings.autoUpdate} onChange={() => updateSetting('autoUpdate')} /></SettingRow>

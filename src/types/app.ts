@@ -22,10 +22,13 @@ export interface StrategyResult {
   error?: string
 }
 
+export type Theme = 'system' | 'light' | 'dark'
+
 export interface Settings {
   autoStrategy: boolean
   autoUpdate: boolean
   launchAtStartup: boolean
+  theme: Theme
 }
 
 export interface Progress {

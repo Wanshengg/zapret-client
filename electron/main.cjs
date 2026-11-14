@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell, Notification } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, Notification, nativeTheme } = require('electron');
 const path = require('node:path');
 const { Store } = require('./store.cjs');
 const { Updater } = require('./updater.cjs');
@@ -134,7 +134,7 @@ function createWindow() {
     minHeight: 650,
     show: false,
     frame: false,
-    backgroundColor: '#f3f5f2',
+    backgroundColor: nativeTheme.shouldUseDarkColors ? '#151a18' : '#f3f5f2',
     title: 'Zapret Client',
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
@@ -152,6 +152,7 @@ function createWindow() {
 app.whenReady().then(async () => {
   store = new Store(dataDir);
   await store.load();
+  nativeTheme.themeSource = store.data.settings.theme;
   updater = new Updater(dataDir, store);
   engine = new ZapretEngine(updater.runtimeDir, {
     getLastWorking: () => store.data.lastWorkingStrategy,
@@ -183,9 +184,12 @@ app.whenReady().then(async () => {
   ipcMain.handle('app:check-updates', () => checkUpdates(false));
   ipcMain.handle('app:install-update', () => exclusive(installLatest));
   ipcMain.handle('app:set-settings', async (_event, values) => {
-    const allowed = (({ autoStrategy, autoUpdate, launchAtStartup }) => ({ autoStrategy, autoUpdate, launchAtStartup }))(values);
+    const allowed = (({ autoStrategy, autoUpdate, launchAtStartup, theme }) => ({ autoStrategy, autoUpdate, launchAtStartup, theme }))(values);
+    if (allowed.theme !== undefined && !['system', 'light', 'dark'].includes(allowed.theme)) delete allowed.theme;
     await store.patchSettings(allowed);
     app.setLoginItemSettings({ openAtLogin: store.data.settings.launchAtStartup });
+    nativeTheme.themeSource = store.data.settings.theme;
+    window?.setBackgroundColor(nativeTheme.shouldUseDarkColors ? '#151a18' : '#f3f5f2');
     emit();
   });
   ipcMain.handle('app:open-github', () => shell.openExternal('https://github.com/Flowseal/zapret-discord-youtube'));
