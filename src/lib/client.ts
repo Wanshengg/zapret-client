@@ -51,7 +51,7 @@ function mockApi(): ZapretApi {
     status: 'disconnected', message: null, progress: null, busy: false, checkingUpdates: false,
     activeStrategy: null, selectedStrategy: 'general.bat', lastWorkingStrategy: null, bestStrategy: null,
     version: '1.10.4', latestVersion: '1.10.4', updateAvailable: false, lastUpdateCheck: null,
-    appVersion: '0.1.0', latestAppVersion: '0.1.0', appUpdateAvailable: false,
+    appVersion: '0.1.1', latestAppVersion: '0.1.1', appUpdateAvailable: false,
     lastAppUpdateCheck: null, checkingAppUpdates: false, appUpdateError: null,
     results: [], settings: { autoStrategy: true, autoConnect: true, autoUpdate: true, launchAtStartup: false, theme: readStoredTheme() },
     strategies, isElectron: false, isPackaged: false,

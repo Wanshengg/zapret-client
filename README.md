@@ -19,7 +19,7 @@
 ## Скачать и установить
 
 1. Откройте [последний релиз](https://github.com/Wanshengg/zapret-client/releases/latest).
-2. Скачайте `Zapret Client Setup 0.1.0.exe`.
+2. Скачайте `Zapret Client Setup 0.1.1.exe`.
 3. Запустите установщик от имени администратора и следуйте инструкциям.
 
 Требуется 64-разрядная Windows 10 или Windows 11. Для работы zapret нужны права администратора.
