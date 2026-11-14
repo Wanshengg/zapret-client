@@ -51,7 +51,9 @@ function mockApi(): ZapretApi {
     status: 'disconnected', message: null, progress: null, busy: false, checkingUpdates: false,
     activeStrategy: null, selectedStrategy: 'general.bat', lastWorkingStrategy: null, bestStrategy: null,
     version: '1.10.4', latestVersion: '1.10.4', updateAvailable: false, lastUpdateCheck: null,
-    results: [], settings: { autoStrategy: true, autoUpdate: true, launchAtStartup: false, theme: readStoredTheme() },
+    appVersion: '0.1.0', latestAppVersion: '0.1.0', appUpdateAvailable: false,
+    lastAppUpdateCheck: null, checkingAppUpdates: false, appUpdateError: null,
+    results: [], settings: { autoStrategy: true, autoConnect: true, autoUpdate: true, launchAtStartup: false, theme: readStoredTheme() },
     strategies, isElectron: false, isPackaged: false,
   }
   const listeners = new Set<(state: AppState) => void>()
@@ -124,6 +126,11 @@ function mockApi(): ZapretApi {
       state = { ...state, busy: false, checkingUpdates: false, lastUpdateCheck: new Date().toISOString(), latestVersion: '1.10.4', updateAvailable: false, message: 'Установлена последняя версия 1.10.4' }; emit()
     },
     installUpdate: async () => { state = { ...state, updateAvailable: false, version: state.latestVersion }; emit() },
+    checkAppUpdate: async () => {
+      state = { ...state, checkingAppUpdates: true, appUpdateError: null, message: 'Проверяем обновление программы…' }; emit(); await wait(650)
+      state = { ...state, checkingAppUpdates: false, lastAppUpdateCheck: new Date().toISOString(), latestAppVersion: state.appVersion, appUpdateAvailable: false, message: `Установлена последняя версия программы ${state.appVersion}` }; emit()
+    },
+    openAppUpdate: async () => { window.open('https://github.com/Wanshengg/zapret-client/releases/latest', '_blank', 'noopener,noreferrer') },
     setSettings: async (settings: Partial<Settings>) => { state = { ...state, settings: { ...state.settings, ...settings } }; emit() },
     openGitHub: async () => { window.open('https://github.com/Flowseal/zapret-discord-youtube', '_blank', 'noopener,noreferrer') },
     clearHistory: async () => { state = { ...state, results: [], bestStrategy: null }; emit() },

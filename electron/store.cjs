@@ -10,6 +10,7 @@ const DEFAULTS = {
   results: [],
   settings: {
     autoStrategy: true,
+    autoConnect: true,
     autoUpdate: true,
     launchAtStartup: false,
     theme: 'system',

@@ -13,6 +13,7 @@ test('theme persists and partial settings preserve other values', async (t) => {
 
   assert.equal(store.data.settings.theme, 'dark');
   assert.equal(store.data.settings.autoStrategy, true);
+  assert.equal(store.data.settings.autoConnect, true);
   assert.equal(store.data.settings.autoUpdate, true);
   assert.equal(store.data.settings.launchAtStartup, false);
 

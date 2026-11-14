@@ -79,8 +79,8 @@ function App() {
         <div className="titlebar-brand"><span className="mini-mark"><Zap size={13} fill="currentColor" /></span>Zapret Client</div>
         <div className="titlebar-center">WINDOWS · {state.version ? `CONFIGS ${state.version}` : 'CONFIGS NOT INSTALLED'}</div>
         {state.isElectron && <div className="window-controls">
-          <button aria-label="Свернуть" onClick={() => api.minimize()}><Minus size={15} /></button>
-          <button aria-label="Закрыть" className="window-close" onClick={() => api.close()}><X size={15} /></button>
+          <button aria-label="Свернуть в трей" title="Свернуть в трей" onClick={() => api.minimize()}><Minus size={15} /></button>
+          <button aria-label="Скрыть в трей" title="Скрыть в трей" className="window-close" onClick={() => api.close()}><X size={15} /></button>
         </div>}
       </header>
 
@@ -176,9 +176,14 @@ function App() {
               </div>
             </div>
             <div className="settings-group"><span className="section-label">ПОВЕДЕНИЕ</span>
+              <SettingRow title="Подключаться при запуске" text="Автоматически включаем zapret, начиная с последней рабочей стратегии"><Toggle label="Автоподключение" checked={state.settings.autoConnect} onChange={() => updateSetting('autoConnect')} /></SettingRow>
               <SettingRow title="Автоматически подбирать стратегию" text="Начинаем с последней рабочей, а после полного теста выбираем лучшую"><Toggle label="Автоматический подбор" checked={state.settings.autoStrategy} onChange={() => updateSetting('autoStrategy')} /></SettingRow>
               <SettingRow title="Обновлять конфиги автоматически" text="Каждые 6 часов проверяем официальный релиз GitHub"><Toggle label="Автоматическое обновление" checked={state.settings.autoUpdate} onChange={() => updateSetting('autoUpdate')} /></SettingRow>
-              <SettingRow title="Запускать клиент вместе с Windows" text="Подключение после запуска остаётся под вашим контролем"><Toggle label="Автозапуск" checked={state.settings.launchAtStartup} onChange={() => updateSetting('launchAtStartup')} /></SettingRow>
+              <SettingRow title="Запускать клиент вместе с Windows" text="После входа в Windows клиент откроется и включит zapret, если разрешено автоподключение"><Toggle label="Автозапуск" checked={state.settings.launchAtStartup} onChange={() => updateSetting('launchAtStartup')} /></SettingRow>
+            </div>
+            <div className="update-panel"><div><span className="section-label">ОБНОВЛЕНИЕ ПРОГРАММЫ</span><h3>{state.appUpdateAvailable ? `Доступна версия ${state.latestAppVersion}` : `Установлена ${state.appVersion}`}</h3><p>Последняя проверка: {formatTime(state.lastAppUpdateCheck)}</p></div>
+              {state.appUpdateAvailable ? <button className="button primary" onClick={() => api.openAppUpdate()}><Download size={16} />Скачать обновление</button> : <button className="button secondary" disabled={state.checkingAppUpdates} onClick={() => api.checkAppUpdate()}><RefreshCw size={16} className={state.checkingAppUpdates ? 'spin' : ''} />Проверить сейчас</button>}
+              <small>{state.appUpdateError ?? 'Проверяем новые релизы Zapret Client после запуска и каждые 6 часов.'}</small>
             </div>
             <div className="update-panel"><div><span className="section-label">ОБНОВЛЕНИЕ КОНФИГОВ</span><h3>{state.updateAvailable ? `Доступна версия ${state.latestVersion}` : `Установлена ${state.version ?? '—'}`}</h3><p>Последняя проверка: {formatTime(state.lastUpdateCheck)}</p></div>
               {state.updateAvailable ? <button className="button primary" disabled={state.busy} onClick={() => api.installUpdate()}><Download size={16} />Установить обновление</button> : <button className="button secondary" disabled={state.busy} onClick={() => api.checkUpdates()}><RefreshCw size={16} className={state.checkingUpdates ? 'spin' : ''} />Проверить сейчас</button>}

@@ -11,6 +11,7 @@ files:
   - package.json
 asar: true
 win:
+  icon: electron/tray-icon.png
   target:
     - nsis
   requestedExecutionLevel: requireAdministrator

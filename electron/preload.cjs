@@ -8,6 +8,8 @@ contextBridge.exposeInMainWorld('zapret', {
   selectStrategy: (strategy) => ipcRenderer.invoke('app:select-strategy', strategy),
   checkUpdates: () => ipcRenderer.invoke('app:check-updates'),
   installUpdate: () => ipcRenderer.invoke('app:install-update'),
+  checkAppUpdate: () => ipcRenderer.invoke('app:check-app-update'),
+  openAppUpdate: () => ipcRenderer.invoke('app:open-app-update'),
   setSettings: (settings) => ipcRenderer.invoke('app:set-settings', settings),
   openGitHub: () => ipcRenderer.invoke('app:open-github'),
   clearHistory: () => ipcRenderer.invoke('app:clear-history'),

@@ -78,6 +78,7 @@ export type Theme = 'system' | 'light' | 'dark'
 
 export interface Settings {
   autoStrategy: boolean
+  autoConnect: boolean
   autoUpdate: boolean
   launchAtStartup: boolean
   theme: Theme
@@ -96,6 +97,7 @@ export interface AppState {
   progress: Progress | null
   busy: boolean
   checkingUpdates: boolean
+  checkingAppUpdates: boolean
   activeStrategy: string | null
   selectedStrategy: string | null
   lastWorkingStrategy: string | null
@@ -104,6 +106,11 @@ export interface AppState {
   latestVersion: string | null
   updateAvailable: boolean
   lastUpdateCheck: string | null
+  appVersion: string
+  latestAppVersion: string | null
+  appUpdateAvailable: boolean
+  lastAppUpdateCheck: string | null
+  appUpdateError: string | null
   results: StrategyResult[]
   settings: Settings
   strategies: Strategy[]
@@ -119,6 +126,8 @@ export interface ZapretApi {
   selectStrategy(strategy: string): Promise<void>
   checkUpdates(): Promise<void>
   installUpdate(): Promise<void>
+  checkAppUpdate(): Promise<void>
+  openAppUpdate(): Promise<void>
   setSettings(settings: Partial<Settings>): Promise<void>
   openGitHub(): Promise<void>
   clearHistory(): Promise<void>
