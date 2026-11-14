@@ -4,6 +4,7 @@ const path = require('node:path');
 const DEFAULTS = {
   selectedStrategy: null,
   lastWorkingStrategy: null,
+  bestStrategy: null,
   version: null,
   lastUpdateCheck: null,
   results: [],

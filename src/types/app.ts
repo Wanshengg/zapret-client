@@ -5,11 +5,57 @@ export interface Strategy {
   name: string
 }
 
+export interface PingResult {
+  ok: boolean
+  latency: number | null
+  error?: string
+}
+
+export interface ProtocolCheck {
+  label: string
+  ok: boolean
+  code: number
+  latency: number
+  connectLatency?: number
+  tlsLatency?: number
+  error?: string
+  unsupported?: boolean
+}
+
 export interface ProbeResult {
   ok: boolean
   code: number
   latency: number
+  connectLatency?: number
+  tlsLatency?: number
   error?: string
+  checks?: ProtocolCheck[]
+  ping?: PingResult
+  httpOk?: number
+  httpTotal?: number
+}
+
+export type DpiStatus = 'clear' | 'blocked' | 'error' | 'unsupported' | 'unknown'
+
+export interface DpiProtocolCheck {
+  label: string
+  status: 'ok' | 'likely_blocked' | 'fail' | 'unsupported'
+  code: number
+  uploadedBytes: number
+  downloadedBytes: number
+  latency: number
+}
+
+export interface DpiResult {
+  status: DpiStatus
+  okCount: number
+  total: number
+  blocked: number
+  errors: number
+  unsupported: number
+  target?: string
+  provider?: string
+  checks?: DpiProtocolCheck[]
 }
 
 export interface StrategyResult {
@@ -20,6 +66,12 @@ export interface StrategyResult {
   youtube?: ProbeResult
   discord?: ProbeResult
   error?: string
+  score?: number
+  httpTotal?: number
+  pingOk?: number
+  pingTotal?: number
+  avgPing?: number | null
+  dpi?: DpiResult
 }
 
 export type Theme = 'system' | 'light' | 'dark'
@@ -47,6 +99,7 @@ export interface AppState {
   activeStrategy: string | null
   selectedStrategy: string | null
   lastWorkingStrategy: string | null
+  bestStrategy: string | null
   version: string | null
   latestVersion: string | null
   updateAvailable: boolean
@@ -61,6 +114,7 @@ export interface AppState {
 export interface ZapretApi {
   getState(): Promise<AppState>
   connect(strategy?: string | null): Promise<void>
+  checkAllStrategies(): Promise<void>
   disconnect(): Promise<void>
   selectStrategy(strategy: string): Promise<void>
   checkUpdates(): Promise<void>

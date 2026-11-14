@@ -30,6 +30,7 @@ function publicState() {
     activeStrategy: engine?.child ? store?.data.selectedStrategy : null,
     selectedStrategy: store?.data.selectedStrategy ?? null,
     lastWorkingStrategy: store?.data.lastWorkingStrategy ?? null,
+    bestStrategy: store?.data.bestStrategy ?? null,
     version: store?.data.version ?? null,
     latestVersion: latest?.version ?? null,
     updateAvailable: Boolean(latest && latest.version !== store?.data.version),
@@ -53,6 +54,7 @@ async function refreshStrategies() {
   if (!strategies.some((item) => item.id === store.data.selectedStrategy)) {
     store.data.selectedStrategy = strategies[0]?.id ?? null;
   }
+  if (!strategies.some((item) => item.id === store.data.bestStrategy)) store.data.bestStrategy = null;
 }
 
 function notify(title, body) {
@@ -96,6 +98,43 @@ async function connectInternal(selected) {
   progress = null;
   emit();
   notify('Подключение установлено', `Рабочая стратегия: ${result.strategyName}`);
+}
+
+function dpiMessage(dpi) {
+  return {
+    clear: 'DPI без блокировки', blocked: 'DPI: возможна блокировка', error: 'DPI: ошибка проверки',
+    unsupported: 'DPI: не поддерживается', unknown: 'DPI: нет данных',
+  }[dpi?.status ?? 'unknown'];
+}
+
+async function checkAllStrategiesInternal() {
+  status = 'preparing';
+  message = null;
+  progress = null;
+  await store.patch({ bestStrategy: null });
+  emit();
+  if (!store.data.version || (latest && latest.version !== store.data.version && store.data.settings.autoUpdate)) {
+    if (!latest) latest = await updater.check();
+    await installLatest();
+  }
+  await refreshStrategies();
+  const summary = await engine.checkAll();
+  if (!summary) { status = 'disconnected'; progress = null; emit(); return; }
+  const best = store.data.results.find((result) => result.strategy === summary.bestStrategy);
+  if (best) {
+    await store.patch({
+      selectedStrategy: best.strategy,
+      bestStrategy: best.strategy,
+      ...(best.success ? { lastWorkingStrategy: best.strategy } : {}),
+    });
+  }
+  status = 'disconnected';
+  message = best
+    ? `Проверка завершена: ${summary.working}/${summary.checked} рабочих. Лучшая: ${best.strategyName} · HTTP ${best.score ?? 0}/${best.httpTotal ?? 0} · ${dpiMessage(best.dpi)} · ping ${best.avgPing ?? '—'} мс.`
+    : `Проверка завершена. Рабочих стратегий: ${summary.working} из ${summary.checked}.`;
+  progress = null;
+  emit();
+  notify('Проверка стратегий завершена', message);
 }
 
 async function exclusive(action) {
@@ -171,6 +210,7 @@ app.whenReady().then(async () => {
 
   ipcMain.handle('app:get-state', () => publicState());
   ipcMain.handle('app:connect', (_event, selected) => connect(selected));
+  ipcMain.handle('app:check-all-strategies', () => exclusive(checkAllStrategiesInternal));
   ipcMain.handle('app:disconnect', () => exclusive(async () => {
     status = 'stopping'; message = null; emit();
     await engine.disconnect();
@@ -193,7 +233,7 @@ app.whenReady().then(async () => {
     emit();
   });
   ipcMain.handle('app:open-github', () => shell.openExternal('https://github.com/Flowseal/zapret-discord-youtube'));
-  ipcMain.handle('app:clear-history', async () => { await store.patch({ results: [] }); emit(); });
+  ipcMain.handle('app:clear-history', async () => { await store.patch({ results: [], bestStrategy: null }); emit(); });
   ipcMain.handle('window:minimize', () => window.minimize());
   ipcMain.handle('window:close', () => window.close());
 

@@ -3,6 +3,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('zapret', {
   getState: () => ipcRenderer.invoke('app:get-state'),
   connect: (strategy) => ipcRenderer.invoke('app:connect', strategy),
+  checkAllStrategies: () => ipcRenderer.invoke('app:check-all-strategies'),
   disconnect: () => ipcRenderer.invoke('app:disconnect'),
   selectStrategy: (strategy) => ipcRenderer.invoke('app:select-strategy', strategy),
   checkUpdates: () => ipcRenderer.invoke('app:check-updates'),

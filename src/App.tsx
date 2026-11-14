@@ -2,25 +2,30 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   Activity, Check, CheckCircle2, ChevronRight, Circle, Download,
   ExternalLink, Github, History, ListChecks, LoaderCircle, Minus, Monitor, Moon, Power,
-  RefreshCw, Settings2, ShieldCheck, SlidersHorizontal, Sun, Wifi, X, Zap,
+  RefreshCw, Settings2, ShieldCheck, SlidersHorizontal, Sun, Trophy, Wifi, X, Zap,
 } from 'lucide-react'
 import { api } from '@/lib/client'
 import { applyTheme } from '@/lib/theme'
-import type { AppState, Settings, Theme } from '@/types/app'
+import type { AppState, DpiResult, DpiStatus, ProbeResult, Settings, Theme } from '@/types/app'
 import './App.css'
 
 type Page = 'connection' | 'strategies' | 'history' | 'settings'
 
 const pageMeta: Record<Page, { title: string; subtitle: string }> = {
   connection: { title: 'Подключение', subtitle: 'YouTube и Discord — без ручного запуска скриптов' },
-  strategies: { title: 'Стратегии', subtitle: 'Оригинальные конфиги из релиза Flowseal' },
-  history: { title: 'Журнал проверок', subtitle: 'Реальные HTTPS-запросы к YouTube и Discord' },
+  strategies: { title: 'Стратегии', subtitle: 'HTTP/TLS, ping и DPI-проверки конфигов Flowseal' },
+  history: { title: 'Журнал проверок', subtitle: 'Подробные сетевые метрики каждой стратегии' },
   settings: { title: 'Настройки', subtitle: 'Обновления, автоподбор и запуск приложения' },
 }
 
 const statusText = {
   disconnected: 'Не подключено', preparing: 'Подготовка', testing: 'Подбор стратегии',
   connected: 'Подключено', stopping: 'Отключение',
+}
+
+const dpiText: Record<DpiStatus, string> = {
+  clear: 'Блокировки не найдены', blocked: 'Возможна блокировка', error: 'Ошибка проверки',
+  unsupported: 'Не поддерживается', unknown: 'Нет данных',
 }
 
 function formatTime(value: string | null) {
@@ -63,6 +68,7 @@ function App() {
 
   const connected = state.status === 'connected'
   const working = state.busy || state.status === 'testing' || state.status === 'preparing'
+  const bestResult = state.results.find((result) => result.strategy === state.bestStrategy)
   const selectPage = (next: Page) => setPage(next)
   const updateSetting = (key: Exclude<keyof Settings, 'theme'>) => api.setSettings({ [key]: !state.settings[key] })
   const setTheme = (theme: Theme) => api.setSettings({ theme })
@@ -124,28 +130,37 @@ function App() {
             </div>
           </section>}
 
-          {page === 'strategies' && <section className="page-section">
-            <div className="section-toolbar"><div><strong>{state.strategies.length || '—'} стратегий</strong><span>{state.settings.autoStrategy ? 'Автоподбор начнётся с последней рабочей' : 'Будет запущена только выбранная стратегия'}</span></div><button className="button primary" disabled={working || !state.selectedStrategy} onClick={() => api.connect(state.selectedStrategy)}><Power size={16} />Проверить и подключить</button></div>
+          {page === 'strategies' && <section className="page-section strategies-section">
+            <div className="section-toolbar"><div><strong>{state.strategies.length || '—'} стратегий</strong><span>После полной проверки лучшая стратегия будет выбрана автоматически</span></div><div className="toolbar-actions"><button className="button secondary" disabled={working || !state.strategies.length} onClick={() => api.checkAllStrategies()}><ListChecks size={16} />Проверить все стратегии</button><button className="button primary" disabled={working || !state.selectedStrategy} onClick={() => api.connect(state.selectedStrategy)}><Power size={16} />Проверить и подключить</button></div></div>
+            {bestResult && <div className="best-strategy">
+              <span className="best-icon"><Trophy size={19} /></span>
+              <div><strong>Лучшая стратегия: {bestResult.strategyName}</strong><span>HTTP {bestResult.score ?? 0}/{bestResult.httpTotal ?? 0} · DPI: {dpiText[bestResult.dpi?.status ?? 'unknown']} · средний ping {bestResult.avgPing ?? '—'} мс</span></div>
+              <button className="button secondary" disabled={working} onClick={() => api.connect(bestResult.strategy)}><Power size={14} />Подключить</button>
+            </div>}
             <div className="strategy-table">
-              <div className="strategy-table-head"><span>Стратегия</span><span>YouTube</span><span>Discord</span><span>Результат</span></div>
+              <div className="strategy-table-head"><span>Стратегия</span><span>YouTube</span><span>Discord</span><span>Ping</span><span>DPI 16–20 КБ</span><span>Результат</span></div>
               {state.strategies.length === 0 && <div className="empty-state"><Download size={24} /><strong>Конфиги ещё не загружены</strong><span>Подключитесь — клиент скачает последний официальный релиз.</span></div>}
               {state.strategies.map((strategy) => {
                 const result = state.results.find((item) => item.strategy === strategy.id)
                 const selected = state.selectedStrategy === strategy.id
-                return <button className={`strategy-row ${selected ? 'selected' : ''}`} key={strategy.id} onClick={() => api.selectStrategy(strategy.id)}>
+                const best = state.bestStrategy === strategy.id
+                return <button className={`strategy-row ${selected ? 'selected' : ''} ${best ? 'best' : ''}`} key={strategy.id} onClick={() => api.selectStrategy(strategy.id)}>
                   <span className="strategy-name"><i>{selected && <Check size={12} />}</i><span><strong>{strategy.name}</strong><small>{strategy.id}</small></span></span>
-                  <ProbeCell ok={result?.youtube?.ok} code={result?.youtube?.code} /><ProbeCell ok={result?.discord?.ok} code={result?.discord?.code} />
-                  <span>{result ? <b className={`result-badge ${result.success ? 'success' : 'failed'}`}>{result.success ? 'Работает' : 'Не подошла'}</b> : <b className="result-badge">Не проверена</b>}</span>
+                  <ProbeCell probe={result?.youtube} /><ProbeCell probe={result?.discord} />
+                  <span className="metric-cell">{result?.avgPing ?? '—'}{result?.avgPing != null && ' мс'}<small>{result ? `ICMP ${result.pingOk ?? 0}/${result.pingTotal ?? 0}` : 'нет данных'}</small></span>
+                  <DpiCell dpi={result?.dpi} />
+                  <span className="result-stack">{result ? <b className={`result-badge ${result.success ? 'success' : 'failed'}`}>{result.success ? 'Работает' : 'Не подошла'}</b> : <b className="result-badge">Не проверена</b>}{best && <b className="best-badge"><Trophy size={10} />Лучшая</b>}</span>
                 </button>
               })}
             </div>
           </section>}
 
           {page === 'history' && <section className="page-section">
-            <div className="section-toolbar"><div><strong>Результаты последней проверки</strong><span>HTTP-код и время ответа сохраняются локально</span></div><button className="button secondary" disabled={!state.results.length} onClick={() => api.clearHistory()}>Очистить журнал</button></div>
+            <div className="section-toolbar"><div><strong>Результаты последней проверки</strong><span>HTTP/TLS, время ответа, ICMP ping и DPI сохраняются локально</span></div><button className="button secondary" disabled={!state.results.length} onClick={() => api.clearHistory()}>Очистить журнал</button></div>
             {state.results.length === 0 ? <div className="empty-state large"><Activity size={28} /><strong>Здесь появятся результаты</strong><span>После подключения вы увидите, какие стратегии сработали.</span></div> : <div className="history-list">{state.results.map((result) => <article className="history-item" key={result.strategy}>
-              <div className="history-top"><div className={`history-status ${result.success ? 'success' : ''}`}>{result.success ? <CheckCircle2 size={18} /> : <Circle size={16} />}<strong>{result.strategyName}</strong></div><time>{formatTime(result.checkedAt)}</time></div>
+              <div className="history-top"><div className={`history-status ${result.success ? 'success' : ''}`}>{result.success ? <CheckCircle2 size={18} /> : <Circle size={16} />}<strong>{result.strategyName}</strong>{result.strategy === state.bestStrategy && <b className="best-badge"><Trophy size={10} />Лучшая</b>}</div><div className="history-meta"><span>HTTP {result.score ?? 0}/{result.httpTotal ?? 0} · ping {result.avgPing ?? '—'} мс</span><time>{formatTime(result.checkedAt)}</time></div></div>
               <div className="history-probes"><ProbeDetail name="YouTube" probe={result.youtube} /><ProbeDetail name="Discord" probe={result.discord} /></div>
+              {result.dpi && <DpiDetail dpi={result.dpi} />}
               {result.error && <p className="error-text">{result.error}</p>}
             </article>)}</div>}
           </section>}
@@ -161,7 +176,7 @@ function App() {
               </div>
             </div>
             <div className="settings-group"><span className="section-label">ПОВЕДЕНИЕ</span>
-              <SettingRow title="Автоматически подбирать стратегию" text="Сначала проверяем последнюю рабочую, затем остальные"><Toggle label="Автоматический подбор" checked={state.settings.autoStrategy} onChange={() => updateSetting('autoStrategy')} /></SettingRow>
+              <SettingRow title="Автоматически подбирать стратегию" text="Начинаем с последней рабочей, а после полного теста выбираем лучшую"><Toggle label="Автоматический подбор" checked={state.settings.autoStrategy} onChange={() => updateSetting('autoStrategy')} /></SettingRow>
               <SettingRow title="Обновлять конфиги автоматически" text="Каждые 6 часов проверяем официальный релиз GitHub"><Toggle label="Автоматическое обновление" checked={state.settings.autoUpdate} onChange={() => updateSetting('autoUpdate')} /></SettingRow>
               <SettingRow title="Запускать клиент вместе с Windows" text="Подключение после запуска остаётся под вашим контролем"><Toggle label="Автозапуск" checked={state.settings.launchAtStartup} onChange={() => updateSetting('launchAtStartup')} /></SettingRow>
             </div>
@@ -179,12 +194,26 @@ function App() {
   )
 }
 
-function ProbeCell({ ok, code }: { ok?: boolean; code?: number }) {
-  return <span className={`probe-cell ${ok === undefined ? '' : ok ? 'ok' : 'fail'}`}>{ok === undefined ? '—' : ok ? <Check size={14} /> : <X size={14} />}{code ? `${code}` : ok === undefined ? '' : 'ошибка'}</span>
+function ProbeCell({ probe }: { probe?: ProbeResult }) {
+  const okCount = probe?.httpOk ?? (probe?.ok ? 1 : 0)
+  const total = probe?.httpTotal ?? 1
+  return <span className={`probe-cell ${!probe ? '' : probe.ok ? 'ok' : 'fail'}`}><span>{!probe ? '—' : probe.ok ? <Check size={14} /> : <X size={14} />}{probe ? (probe.code || 'ошибка') : ''}</span><small>{probe ? `${probe.latency} мс · ${okCount}/${total}` : 'нет данных'}</small></span>
 }
 
-function ProbeDetail({ name, probe }: { name: string; probe?: { ok: boolean; code: number; latency: number } }) {
-  return <div><span>{name}</span><strong className={probe?.ok ? 'text-success' : 'text-failed'}>{probe?.ok ? 'Доступен' : 'Нет ответа'}</strong><small>{probe ? `${probe.code || '—'} · ${probe.latency} мс` : 'Запуск не удался'}</small></div>
+function DpiCell({ dpi }: { dpi?: DpiResult }) {
+  const short = { clear: 'OK', blocked: 'Блок', error: 'Ошибка', unsupported: 'UNSUP', unknown: '—' }[dpi?.status ?? 'unknown']
+  return <span className={`dpi-cell ${dpi?.status ?? 'unknown'}`}>{short}<small>{dpi ? `${dpi.okCount}/${dpi.total} проверок` : 'нет данных'}</small></span>
+}
+
+function ProbeDetail({ name, probe }: { name: string; probe?: ProbeResult }) {
+  return <div className="probe-detail">
+    <div className="probe-summary"><span>{name}</span><strong className={probe?.ok ? 'text-success' : 'text-failed'}>{probe?.ok ? 'Доступен' : 'Нет ответа'}</strong><small>{probe ? `${probe.code || '—'} · ${probe.latency} мс · ping ${probe.ping?.latency ?? '—'} мс` : 'Запуск не удался'}</small></div>
+    {probe?.checks && <div className="protocol-checks">{probe.checks.map((check) => <span key={check.label} className={check.ok ? 'ok' : 'fail'}>{check.label}<b>{check.ok ? 'OK' : check.unsupported ? 'UNSUP' : 'ERR'}</b><small>{check.latency} мс</small></span>)}</div>}
+  </div>
+}
+
+function DpiDetail({ dpi }: { dpi: DpiResult }) {
+  return <div className={`dpi-detail ${dpi.status}`}><ShieldCheck size={15} /><span>DPI TCP 16–20 КБ</span><strong>{dpiText[dpi.status]}</strong><small>{dpi.okCount}/{dpi.total} OK{dpi.provider ? ` · ${dpi.provider}` : ''}{dpi.target ? ` · ${dpi.target}` : ''}</small></div>
 }
 
 function SettingRow({ title, text, children }: { title: string; text: string; children: React.ReactNode }) {
