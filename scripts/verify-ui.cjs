@@ -45,7 +45,7 @@ const assert = require('node:assert/strict');
   assert.equal(await autoUpdate.getAttribute('aria-checked'), 'false');
   const appUpdatePanel = page.locator('.update-panel').filter({ hasText: 'ОБНОВЛЕНИЕ ПРОГРАММЫ' });
   await appUpdatePanel.getByRole('button', { name: 'Проверить сейчас' }).click();
-  await page.getByText('Установлена последняя версия программы 0.1.1', { exact: true }).waitFor();
+  await page.getByText('Установлена последняя версия программы 0.1.2', { exact: true }).waitFor();
   const configUpdatePanel = page.locator('.update-panel').filter({ hasText: 'ОБНОВЛЕНИЕ КОНФИГОВ' });
   await configUpdatePanel.getByRole('button', { name: 'Проверить сейчас' }).click();
   await page.getByText('Установлена последняя версия 1.10.4', { exact: true }).waitFor();

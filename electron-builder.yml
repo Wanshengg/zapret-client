@@ -8,6 +8,7 @@ files:
   - node_modules/yauzl/**/*
   - node_modules/buffer-crc32/**/*
   - node_modules/fd-slicer/**/*
+  - node_modules/pend/**/*
   - package.json
 asar: true
 win:
