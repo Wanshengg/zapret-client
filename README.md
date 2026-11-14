@@ -1,73 +1,57 @@
-# React + TypeScript + Vite
+# Zapret Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Настольный Windows-клиент для [Flowseal zapret-discord-youtube](https://github.com/Flowseal/zapret-discord-youtube). Позволяет подключать и отключать zapret, выбирать стратегию, просматривать журнал проверок и обновлять конфиги через графический интерфейс.
 
-Currently, two official plugins are available:
+## Возможности
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- подключение и отключение zapret одной кнопкой;
+- автоматический и ручной выбор стратегии;
+- журнал результатов проверок;
+- автоматическое обновление конфигов zapret;
+- запуск вместе с Windows;
+- светлая, тёмная и системная темы с сохранением выбора.
 
-## React Compiler
+## Скачать и установить
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. Откройте [последний релиз](https://github.com/Wanshengg/zapret-client/releases/latest).
+2. Скачайте `Zapret Client Setup 0.1.0.exe`.
+3. Запустите установщик от имени администратора и следуйте инструкциям.
 
-## Expanding the ESLint configuration
+Требуется 64-разрядная Windows 10 или Windows 11. Для работы zapret нужны права администратора.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Установщик не подписан кодовым сертификатом, поэтому Windows SmartScreen может показать предупреждение.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Как обновить
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Саму программу
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Скачайте установщик новой версии из раздела Releases и запустите его поверх установленной версии. Настройки и скачанные конфиги сохраняются.
+
+### Конфиги zapret
+
+Откройте **Настройки → Проверить сейчас**. Если включено автоматическое обновление, клиент также проверяет новые конфиги после запуска и каждые 6 часов.
+
+Обновление конфигов и обновление самого клиента — отдельные операции.
+
+## Запуск из исходников
+
+Требуется Node.js 24 или новее.
+
+```bash
+npm install
+npm run dev:electron
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Проверки и сборка:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm test
+npm run build
+npm run dist
 ```
+
+Готовый установщик появится в каталоге `release`.
+
+## Исходный проект
+
+Конфиги и исполняемые компоненты zapret загружаются из официальных релизов [Flowseal zapret-discord-youtube](https://github.com/Flowseal/zapret-discord-youtube). Этот репозиторий содержит только графический клиент.

@@ -89,5 +89,10 @@
     "zod": "^4.3.5"
   },
   "description": "One-click Windows client for Flowseal zapret-discord-youtube",
+  "author": "Ivan",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Wanshengg/zapret-client.git"
+  },
   "main": "electron/main.cjs"
 }

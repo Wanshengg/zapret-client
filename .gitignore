@@ -24,6 +24,7 @@ dist-ssr
 *.sw?
 
 # Zapret Client build and verification artifacts
+.tools/
 .build-debug/
 .verification/
 .test-data/
