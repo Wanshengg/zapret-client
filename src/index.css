@@ -1,0 +1,49 @@
+@import '@fontsource-variable/manrope';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+@import '@fontsource/ibm-plex-mono/600.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 120 9% 97%;
+    --foreground: 155 20% 16%;
+    --card: 120 9% 99%;
+    --card-foreground: 155 20% 16%;
+    --popover: 120 9% 99%;
+    --popover-foreground: 155 20% 16%;
+    --primary: 157 33% 24%;
+    --primary-foreground: 120 9% 98%;
+    --secondary: 150 12% 94%;
+    --secondary-foreground: 157 33% 24%;
+    --muted: 150 8% 94%;
+    --muted-foreground: 155 6% 42%;
+    --accent: 150 20% 93%;
+    --accent-foreground: 157 33% 24%;
+    --destructive: 15 65% 45%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 140 8% 88%;
+    --input: 140 8% 88%;
+    --ring: 157 40% 40%;
+    --radius: 0.625rem;
+  }
+
+  * { border-color: hsl(var(--border)); }
+  html { background: hsl(var(--background)); }
+  body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100dvh;
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Manrope Variable', 'Segoe UI', sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection { background: oklch(0.86 0.08 157); color: oklch(0.25 0.05 157); }
+}

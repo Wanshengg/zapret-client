@@ -1,0 +1,23 @@
+appId: local.zapret.client
+productName: Zapret Client
+directories:
+  output: release
+files:
+  - dist/**/*
+  - electron/**/*
+  - node_modules/yauzl/**/*
+  - node_modules/buffer-crc32/**/*
+  - node_modules/fd-slicer/**/*
+  - package.json
+asar: true
+win:
+  target:
+    - nsis
+  requestedExecutionLevel: requireAdministrator
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  perMachine: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Zapret Client
